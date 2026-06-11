@@ -1,0 +1,452 @@
+{
+  "info": {
+    "name": "RPG Campaign Manager API",
+    "description": "REST API za vođenje RPG kampanja — završni projekat iz kursa Internet softverske arhitekture (Univerzitet Singidunum).\n\nKako koristiti:\n1. Pokreni aplikaciju: `docker compose up --build`\n2. Izaberi environment 'RPG Campaign Manager - Local'.\n3. Pozovi 'Auth / Login' (demo: gamemaster / password123) — test skripta automatski snima accessToken i refreshToken u environment.\n4. Ostali zahtevi koriste {{accessToken}} kroz Bearer auth na nivou kolekcije.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"newplayer\",\n  \"email\": \"newplayer@singidunum.rs\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"username\": \"newplayer\",\n  \"email\": \"newplayer@singidunum.rs\",\n  \"password\": \"password123\"\n}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api", "auth", "register"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"username\": \"newplayer\",\n  \"role\": \"PLAYER\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('accessToken', json.accessToken);",
+                  "pm.environment.set('refreshToken', json.refreshToken);",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Ima access token', () => pm.expect(json.accessToken).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"gamemaster\",\n  \"password\": \"password123\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"username\": \"gamemaster\",\n  \"password\": \"password123\"\n}" },
+                "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9...\",\n  \"username\": \"gamemaster\",\n  \"role\": \"GAME_MASTER\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "pm.environment.set('accessToken', json.accessToken);",
+                  "pm.environment.set('refreshToken', json.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/auth/refresh", "host": ["{{baseUrl}}"], "path": ["api", "auth", "refresh"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "List campaigns",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/campaigns", "host": ["{{baseUrl}}"], "path": ["api", "campaigns"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/campaigns", "host": ["{{baseUrl}}"], "path": ["api", "campaigns"] } },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"title\": \"The Lost Mines of Singidunum\",\n    \"description\": \"A classic dungeon crawl beneath the old university halls.\",\n    \"setting\": \"Forgotten Realms\",\n    \"gameMaster\": { \"id\": 1, \"username\": \"gamemaster\", \"email\": \"gm@singidunum.rs\", \"role\": \"GAME_MASTER\" },\n    \"characterCount\": 2,\n    \"sessionCount\": 2,\n    \"players\": [\n      { \"id\": 2, \"username\": \"aragorn\", \"email\": \"aragorn@singidunum.rs\", \"role\": \"PLAYER\" }\n    ]\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get campaign",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Create campaign (GM)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Curse of the Crimson Tower\",\n  \"description\": \"A haunted tower looms over the village.\",\n  \"setting\": \"Ravenloft\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/campaigns", "host": ["{{baseUrl}}"], "path": ["api", "campaigns"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"title\": \"Curse of the Crimson Tower\",\n  \"description\": \"A haunted tower looms over the village.\",\n  \"setting\": \"Ravenloft\"\n}" },
+                "url": { "raw": "{{baseUrl}}/api/campaigns", "host": ["{{baseUrl}}"], "path": ["api", "campaigns"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 2,\n  \"title\": \"Curse of the Crimson Tower\",\n  \"description\": \"A haunted tower looms over the village.\",\n  \"setting\": \"Ravenloft\",\n  \"gameMaster\": { \"id\": 1, \"username\": \"gamemaster\", \"email\": \"gm@singidunum.rs\", \"role\": \"GAME_MASTER\" },\n  \"characterCount\": 0,\n  \"sessionCount\": 0,\n  \"players\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update campaign (GM)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"The Lost Mines of Singidunum (Remastered)\",\n  \"description\": \"Updated description.\",\n  \"setting\": \"Forgotten Realms\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete campaign (GM)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/2", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "2"] }
+          },
+          "response": []
+        },
+        {
+          "name": "List players",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1/players", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1", "players"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Add player to campaign (GM)",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1/players/3", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1", "players", "3"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove player from campaign (GM)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1/players/3", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1", "players", "3"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Characters",
+      "item": [
+        {
+          "name": "List characters",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/characters?campaignId=1", "host": ["{{baseUrl}}"], "path": ["api", "characters"], "query": [{ "key": "campaignId", "value": "1" }] }
+          },
+          "response": []
+        },
+        {
+          "name": "My characters",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/characters/mine", "host": ["{{baseUrl}}"], "path": ["api", "characters", "mine"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Get character",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/characters/1", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Create character",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Gimli\",\n  \"race\": \"Dwarf\",\n  \"characterClass\": \"Fighter\",\n  \"level\": 4,\n  \"hitPoints\": 52,\n  \"backstory\": \"Son of Gloin.\",\n  \"campaignId\": 1\n}" },
+            "url": { "raw": "{{baseUrl}}/api/characters", "host": ["{{baseUrl}}"], "path": ["api", "characters"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"name\": \"Gimli\",\n  \"race\": \"Dwarf\",\n  \"characterClass\": \"Fighter\",\n  \"level\": 4,\n  \"hitPoints\": 52,\n  \"backstory\": \"Son of Gloin.\",\n  \"campaignId\": 1\n}" },
+                "url": { "raw": "{{baseUrl}}/api/characters", "host": ["{{baseUrl}}"], "path": ["api", "characters"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 3,\n  \"name\": \"Gimli\",\n  \"race\": \"Dwarf\",\n  \"characterClass\": \"Fighter\",\n  \"level\": 4,\n  \"hitPoints\": 52,\n  \"backstory\": \"Son of Gloin.\",\n  \"campaignId\": 1,\n  \"campaignTitle\": \"The Lost Mines of Singidunum\",\n  \"player\": { \"id\": 1, \"username\": \"gamemaster\", \"email\": \"gm@singidunum.rs\", \"role\": \"GAME_MASTER\" },\n  \"itemCount\": 0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update character (owner/GM)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Gimli\",\n  \"race\": \"Dwarf\",\n  \"characterClass\": \"Barbarian\",\n  \"level\": 5,\n  \"hitPoints\": 60,\n  \"backstory\": \"Now raging.\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/characters/3", "host": ["{{baseUrl}}"], "path": ["api", "characters", "3"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete character (owner/GM)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/characters/3", "host": ["{{baseUrl}}"], "path": ["api", "characters", "3"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Inventory (character items)",
+      "item": [
+        {
+          "name": "List inventory",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/characters/1/items", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1", "items"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Add item to inventory",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"itemId\": 3,\n  \"quantity\": 2,\n  \"equipped\": false\n}" },
+            "url": { "raw": "{{baseUrl}}/api/characters/1/items", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1", "items"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"itemId\": 3,\n  \"quantity\": 2,\n  \"equipped\": false\n}" },
+                "url": { "raw": "{{baseUrl}}/api/characters/1/items", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1", "items"] }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 5,\n  \"item\": { \"id\": 3, \"name\": \"Healing Potion\", \"itemType\": \"POTION\", \"rarity\": \"COMMON\", \"goldValue\": 50, \"description\": \"Restores 2d4+2 hit points.\" },\n  \"quantity\": 2,\n  \"equipped\": false\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update inventory entry",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"quantity\": 5,\n  \"equipped\": true\n}" },
+            "url": { "raw": "{{baseUrl}}/api/characters/1/items/5", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1", "items", "5"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove inventory entry",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/characters/1/items/5", "host": ["{{baseUrl}}"], "path": ["api", "characters", "1", "items", "5"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "List sessions of campaign",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1/sessions", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1", "sessions"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Create session (GM)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"sessionNumber\": 3,\n  \"title\": \"The Black Spider\",\n  \"summary\": \"Final confrontation in Wave Echo Cave.\",\n  \"playedOn\": \"2026-03-15\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/campaigns/1/sessions", "host": ["{{baseUrl}}"], "path": ["api", "campaigns", "1", "sessions"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Get session",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/sessions/1", "host": ["{{baseUrl}}"], "path": ["api", "sessions", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update session (GM)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"sessionNumber\": 1,\n  \"title\": \"Goblin Ambush (revised)\",\n  \"summary\": \"Updated recap.\",\n  \"playedOn\": \"2026-03-01\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/sessions/1", "host": ["{{baseUrl}}"], "path": ["api", "sessions", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete session (GM)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/sessions/1", "host": ["{{baseUrl}}"], "path": ["api", "sessions", "1"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "List items",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/items", "host": ["{{baseUrl}}"], "path": ["api", "items"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{baseUrl}}/api/items", "host": ["{{baseUrl}}"], "path": ["api", "items"] } },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  { \"id\": 1, \"name\": \"Andúril\", \"itemType\": \"WEAPON\", \"rarity\": \"LEGENDARY\", \"goldValue\": 1500, \"description\": \"Reforged blade of the West.\" },\n  { \"id\": 3, \"name\": \"Healing Potion\", \"itemType\": \"POTION\", \"rarity\": \"COMMON\", \"goldValue\": 50, \"description\": \"Restores 2d4+2 hit points.\" }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get item",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/items/1", "host": ["{{baseUrl}}"], "path": ["api", "items", "1"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Create item (GM)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Ring of Protection\",\n  \"itemType\": \"TREASURE\",\n  \"rarity\": \"RARE\",\n  \"goldValue\": 3500,\n  \"description\": \"+1 to AC and saving throws.\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/items", "host": ["{{baseUrl}}"], "path": ["api", "items"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Update item (GM)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Healing Potion (Greater)\",\n  \"itemType\": \"POTION\",\n  \"rarity\": \"UNCOMMON\",\n  \"goldValue\": 150,\n  \"description\": \"Restores 4d4+4 hit points.\"\n}" },
+            "url": { "raw": "{{baseUrl}}/api/items/3", "host": ["{{baseUrl}}"], "path": ["api", "items", "3"] }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete item (GM)",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/api/items/5", "host": ["{{baseUrl}}"], "path": ["api", "items", "5"] }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "List users (GM)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/users", "host": ["{{baseUrl}}"], "path": ["api", "users"] }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

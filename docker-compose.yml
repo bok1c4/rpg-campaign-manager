@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: rpg-db
+    environment:
+      POSTGRES_DB: rpgdb
+      POSTGRES_USER: rpg
+      POSTGRES_PASSWORD: rpg
+    ports:
+      # host 5433 -> container 5432 (host 5432 je cesto zauzet lokalnim Postgres-om).
+      # Aplikacija ionako pristupa bazi preko interne mreze (db:5432).
+      - "5433:5432"
+    volumes:
+      - rpg-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rpg -d rpgdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rpg-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/rpgdb
+      SPRING_DATASOURCE_USERNAME: rpg
+      SPRING_DATASOURCE_PASSWORD: rpg
+      APP_JWT_SECRET: singidunum-rpg-campaign-manager-super-secret-key-change-me-256bit
+    ports:
+      - "8080:8080"
+
+volumes:
+  rpg-db-data:
