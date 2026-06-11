@@ -30,8 +30,8 @@ pokreće sa `docker compose up --build` na **http://localhost:8080**.
 
 | Username | Uloga | Napomena |
 |---|---|---|
-| `gamemaster` | GAME_MASTER | glavni demo GM (2 kampanje) |
-| `dungeonkeeper` | GAME_MASTER | drugi GM (1 kampanja) |
+| `gamemaster` | GAME_MASTER | glavni demo GM (2 kampanje) + 2 lika u „Moji likovi“ |
+| `dungeonkeeper` | GAME_MASTER | drugi GM (1 kampanja) + 1 lik |
 | `aragorn` | PLAYER | ima 2 lika u 2 kampanje |
 | `legolas`, `gimli` | PLAYER | u kampanji „Lost Mines“ |
 | `gandalf`, `frodo` | PLAYER | u kampanji „Tomb…“ |
@@ -69,7 +69,9 @@ Navbar prikazuje tvoje ime i ulogu; GM-only dugmad se ne prikazuju igraču.
 - **8 korisnika** (2 GM + 6 igrača), **13 predmeta** (svi tipovi: WEAPON/ARMOR/POTION/SCROLL/TREASURE/MISC
   i sve retkosti: COMMON→LEGENDARY).
 - **3 kampanje**: „The Lost Mines of Singidunum“, „Tomb of the Forgotten Compiler“, „Shadows over Belgrade“.
-- **8 likova** sa popunjenim inventarima, **6 sesija**.
+- **11 likova** sa popunjenim inventarima, **6 sesija**. Svaki demo nalog (i GM-ovi i igrači) ima
+  bar jednog lika u „Moji likovi“ — `gamemaster` ima „Sir Roland“ i „Vesna the Seer“,
+  `dungeonkeeper` ima „Inspektor Kovač“.
 - Seed se ubacuje samo ako je baza prazna. Reset na čisto: `docker compose down -v && docker compose up`.
 
 ## Dev mapa — backend

@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Ubacuje bogate demo podatke pri prvom pokretanju (ako je baza prazna):
  * 2 Game Master-a, 6 igrača, 13 predmeta (svi tipovi i retkosti),
- * 3 kampanje, 8 likova sa inventarima i 6 sesija.
+ * 3 kampanje, 11 likova sa inventarima (i GM nalozi imaju svoje likove) i 6 sesija.
  * Sve lozinke su "password123".
  */
 @Component
@@ -101,7 +101,12 @@ public class DataSeeder implements CommandLineRunner {
         GameCharacter cBoromir = character("Boromir", "Human", "Paladin", 6, 58, boromir, shadows);
         GameCharacter cStrider = character("Strider", "Human", "Ranger", 3, 30, aragorn, shadows);
         GameCharacter cMira = character("Mira Nightshade", "Tiefling", "Warlock", 4, 32, boromir, shadows);
-        characterRepository.saveAll(List.of(cAragorn, cLegolas, cGimli, cGandalf, cFrodo, cBoromir, cStrider, cMira));
+        // Likovi koje vode sami Game Master-i — da i GM nalozi imaju podatke u "Moji likovi"
+        GameCharacter cRoland = character("Sir Roland", "Human", "Paladin", 7, 64, gm, lostMines);
+        GameCharacter cVesna = character("Vesna the Seer", "Human", "Cleric", 6, 48, gm, tomb);
+        GameCharacter cKovac = character("Inspektor Kovač", "Human", "Rogue", 5, 40, dungeonKeeper, shadows);
+        characterRepository.saveAll(List.of(cAragorn, cLegolas, cGimli, cGandalf, cFrodo, cBoromir, cStrider, cMira,
+                cRoland, cVesna, cKovac));
 
         // ---------- Inventari (ManyToMany lik <-> predmet) ----------
         characterItemRepository.saveAll(List.of(
@@ -122,7 +127,14 @@ public class DataSeeder implements CommandLineRunner {
                 inventory(cBoromir, shield, 1, true),
                 inventory(cBoromir, greaterPotion, 2, false),
                 inventory(cStrider, longbow, 1, true),
-                inventory(cMira, tools, 1, true)));
+                inventory(cMira, tools, 1, true),
+                inventory(cRoland, shield, 1, true),
+                inventory(cRoland, greaterPotion, 2, false),
+                inventory(cVesna, fireball, 2, false),
+                inventory(cVesna, potion, 3, false),
+                inventory(cKovac, sting, 1, true),
+                inventory(cKovac, cloak, 1, true),
+                inventory(cKovac, tools, 1, false)));
 
         // ---------- Sesije ----------
         sessionRepository.saveAll(List.of(
